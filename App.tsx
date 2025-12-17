@@ -5,8 +5,8 @@ import { EditorPanel } from './components/EditorPanel';
 import { WelcomeModal } from './components/WelcomeModal';
 import { Logo } from './components/ui/Logo';
 import { analyzeText, getChatResponse } from './services/geminiService';
-import { AnalysisResult, ChatMessage } from './types';
-import { Download, PlusCircle, Layout, MessageSquare, Lightbulb, X, Upload, PenTool } from 'lucide-react';
+import { AnalysisResult, ChatMessage, Suggestion } from './types';
+import { Download, PlusCircle, Layout, MessageSquare, Lightbulb, X, Upload, PenTool, CheckCircle2 } from 'lucide-react';
 import { LoadingSpinner } from './components/ui/Loading';
 
 // Debounce helper
@@ -121,18 +121,50 @@ const App: React.FC = () => {
     document.body.removeChild(element);
   };
 
+  const handleApplySuggestion = (s: Suggestion) => {
+    if (!s.originalText || !s.replacement) return;
+
+    // We try to find the text in the HTML content. 
+    // Since originalText comes from stripped HTML, it might not match exact HTML source if there are tags.
+    // We'll try a simple replace first.
+    if (text.includes(s.originalText)) {
+      const newText = text.replace(s.originalText, s.replacement);
+      setText(newText);
+      setDocVersion(v => v + 1); // Force editor update
+      
+      // Optimistically remove suggestion from UI
+      if (analysis) {
+        setAnalysis({
+          ...analysis,
+          suggestions: analysis.suggestions.filter(suggestion => suggestion !== s)
+        });
+      }
+    } else {
+      // If exact match fails (e.g. text has formatting tags inside), we notify the user
+      alert("Could not find the exact text match to replace. The text might have been modified or contains formatting tags.");
+    }
+  };
+
   const SuggestionsList = () => {
     if (!analysis?.suggestions?.length) return <div className="p-8 text-center text-slate-400 italic">Begin writing to generate academic insights...</div>;
     return (
       <div className="p-4 space-y-3">
         {analysis.suggestions.map((s, idx) => (
-          <div key={idx} className="bg-white p-4 rounded border-l-4 border-academic-gold shadow-sm hover:shadow-md transition-all cursor-pointer group">
+          <div 
+            key={idx} 
+            onClick={() => handleApplySuggestion(s)}
+            className="bg-white p-4 rounded border-l-4 border-academic-gold shadow-sm hover:shadow-md transition-all cursor-pointer group relative"
+            title="Click to apply this suggestion"
+          >
             <div className="flex justify-between items-start mb-2">
                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
                  s.type === 'correction' ? 'bg-red-50 text-red-700' : 
                  s.type === 'tone' ? 'bg-academic-navy text-white' : 'bg-slate-100 text-slate-700'
                }`}>
                  {s.type}
+               </span>
+               <span className="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 bg-emerald-50 rounded-full p-1">
+                 <CheckCircle2 className="w-4 h-4" />
                </span>
             </div>
             <p className="text-sm text-slate-800 font-serif">{s.text}</p>
