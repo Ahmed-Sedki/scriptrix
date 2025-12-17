@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
-import { Send, Sparkles, MessageSquare } from 'lucide-react';
+import { Send, Sparkles, MessageSquare, Wand2, Check, X } from 'lucide-react';
 import { LoadingSpinner } from './ui/Loading';
 import { Logo } from './ui/Logo';
 
@@ -8,6 +8,8 @@ interface ChatInterfaceProps {
   messages: ChatMessage[];
   onSendMessage: (msg: string) => void;
   isLoading: boolean;
+  onApplyChange?: (content: string) => void;
+  hasSelection?: boolean;
 }
 
 const QUICK_PROMPTS = [
@@ -17,7 +19,98 @@ const QUICK_PROMPTS = [
   "Expand this idea"
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMessage, isLoading }) => {
+// Helper to format markdown strings to HTML for display in chat
+const formatMarkdownToHtml = (markdown: string) => {
+  let html = markdown.trim();
+
+  // Handle horizontal rules
+  html = html.replace(/^\*\*\*$/gm, '<hr class="my-4 border-slate-200" />');
+  html = html.replace(/^---$/gm, '<hr class="my-4 border-slate-200" />');
+
+  // Handle Headers
+  html = html.replace(/^### (.*$)/gm, '<h3 class="text-base font-bold font-serif mt-4 mb-2 text-academic-navy">$1</h3>');
+  html = html.replace(/^## (.*$)/gm, '<h2 class="text-lg font-bold font-serif mt-5 mb-3 text-academic-navy">$1</h2>');
+  html = html.replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold font-serif mt-6 mb-4 text-academic-navy">$1</h1>');
+
+  // Handle Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  
+  // Handle Italic
+  html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
+
+  // Handle Lists (simple bullet points)
+  html = html.replace(/^\s*-\s+(.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
+
+  // Handle newlines (converting to <br> if not already handled by block elements)
+  html = html.replace(/\n/g, '<br>');
+
+  return html;
+};
+
+const MessageItem: React.FC<{ 
+  msg: ChatMessage, 
+  onApply: (content: string) => void,
+  hasSelection: boolean
+}> = ({ msg, onApply, hasSelection }) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  return (
+    <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} group animate-fade-in`}>
+      <div
+        className={`relative max-w-[92%] p-4 rounded-lg text-sm leading-relaxed shadow-sm font-serif ${
+          msg.role === 'user'
+            ? 'bg-academic-navy text-white rounded-br-none'
+            : 'bg-academic-paper-dark text-slate-800 border border-slate-200 rounded-bl-none'
+        }`}
+      >
+        <div 
+          className="chat-message-content"
+          dangerouslySetInnerHTML={{ __html: formatMarkdownToHtml(msg.content) }}
+        />
+        
+        {/* Approve/Decline Controls for AI messages */}
+        {msg.role === 'model' && !showConfirm && (
+          <button 
+            onClick={() => setShowConfirm(true)}
+            className="absolute -right-2 -bottom-2 bg-academic-gold text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 active:scale-95"
+            title="Apply to document"
+          >
+            <Wand2 className="w-3.5 h-3.5" />
+          </button>
+        )}
+
+        {showConfirm && (
+          <div className="mt-4 pt-3 border-t border-slate-200 flex flex-col space-y-2 animate-fade-in">
+             <p className="text-[10px] font-bold uppercase tracking-widest text-academic-gold">Apply this response to selection?</p>
+             {!hasSelection && (
+               <p className="text-[10px] text-red-500 italic">No text selected in editor.</p>
+             )}
+             <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    onApply(msg.content);
+                    setShowConfirm(false);
+                  }}
+                  disabled={!hasSelection}
+                  className="flex-1 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest py-1.5 rounded hover:bg-emerald-700 transition-colors flex items-center justify-center disabled:opacity-50"
+                >
+                  <Check className="w-3 h-3 mr-1" /> Approve
+                </button>
+                <button 
+                  onClick={() => setShowConfirm(false)}
+                  className="flex-1 bg-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest py-1.5 rounded hover:bg-slate-300 transition-colors flex items-center justify-center"
+                >
+                  <X className="w-3 h-3 mr-1" /> Decline
+                </button>
+             </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMessage, isLoading, onApplyChange, hasSelection }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +120,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,20 +144,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
         )}
         
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[90%] p-4 rounded-lg text-sm leading-relaxed shadow-sm font-serif ${
-                msg.role === 'user'
-                  ? 'bg-academic-navy text-white rounded-br-none'
-                  : 'bg-academic-paper-dark text-slate-800 border border-slate-200 rounded-bl-none'
-              }`}
-            >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
-            </div>
-          </div>
+          <MessageItem 
+            key={msg.id} 
+            msg={msg} 
+            onApply={(content) => onApplyChange?.(content)}
+            hasSelection={hasSelection || false}
+          />
         ))}
         
         {isLoading && (
