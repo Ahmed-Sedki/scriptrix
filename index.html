@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AcadeWrite Pro - AI Academic Writing Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              academic: {
+                navy: '#0f172a',
+                blue: '#1e3a8a',
+                gold: '#b45309',
+                paper: '#fdfbf7',
+                'paper-dark': '#f5f2eb',
+              }
+            },
+            fontFamily: {
+              serif: ['Merriweather', 'serif'],
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&display=swap');
+      
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f1f5f9;
+      }
+      
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Merriweather', serif;
+      }
+
+      /* Editor Content Styles */
+      .editor-content {
+        font-family: 'Merriweather', serif;
+        outline: none;
+        color: #1e293b;
+      }
+      .editor-content h1 {
+        font-size: 2em;
+        font-weight: 900;
+        margin-bottom: 0.75em;
+        margin-top: 1em;
+        color: #0f172a;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.25em;
+      }
+      .editor-content h2 {
+        font-size: 1.5em;
+        font-weight: 700;
+        margin-bottom: 0.5em;
+        margin-top: 1em;
+        color: #1e293b;
+      }
+      .editor-content ul {
+        list-style-type: disc;
+        padding-left: 1.5em;
+        margin-bottom: 1em;
+      }
+      .editor-content ol {
+        list-style-type: decimal;
+        padding-left: 1.5em;
+        margin-bottom: 1em;
+      }
+      .editor-content b, .editor-content strong {
+        font-weight: 700;
+      }
+      .editor-content i, .editor-content em {
+        font-style: italic;
+      }
+      .editor-content u {
+        text-decoration: underline;
+        text-decoration-color: #94a3b8;
+      }
+      .editor-content p {
+        margin-bottom: 1.25em;
+        line-height: 1.8;
+      }
+      .editor-content blockquote {
+        border-left: 4px solid #b45309;
+        background-color: rgba(180, 83, 9, 0.05);
+        padding: 1em 1.5em;
+        margin-bottom: 1.25em;
+        font-style: italic;
+        color: #475569;
+        border-radius: 0 4px 4px 0;
+      }
+      
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+      
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+      
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+      }
+      
+      @keyframes slide-up {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .animate-slide-up {
+        animation: slide-up 0.4s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "recharts": "https://esm.sh/recharts@^3.6.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
