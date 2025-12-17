@@ -19,7 +19,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
              <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center text-academic-gold mb-3 md:mb-4 border border-white/20">
                <Logo className="w-6 h-6 md:w-8 md:h-8" />
              </div>
-             <h2 className="text-xl md:text-2xl font-serif font-bold text-white">AcadeWrite Pro</h2>
+             <h2 className="text-xl md:text-2xl font-serif font-bold text-white">Scriptrix</h2>
              <p className="text-slate-300 text-xs md:text-sm mt-2 uppercase tracking-widest">Scholarly Writing Assistant</p>
           </div>
           <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">

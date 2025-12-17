@@ -165,9 +165,38 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ text, setText, onTextC
     
     const selection = window.getSelection();
     if (selection) {
+      // 1. Restore the original selection
       selection.removeAllRanges();
       selection.addRange(aiPopup.range);
-      document.execCommand('insertText', false, aiPopup.result);
+      
+      // 2. Clean and format the result string
+      let content = aiPopup.result.trim();
+      
+      // Remove surrounding quotes if present (common AI artifact)
+      if ((content.startsWith('"') && content.endsWith('"')) || (content.startsWith("'") && content.endsWith("'"))) {
+          content = content.slice(1, -1);
+      }
+      
+      // Remove conversational prefixes if any slipped through
+      content = content.replace(/^(Here is|Here's) the (rewritten|improved|edited) text:?\s*/i, "");
+
+      // Convert basic markdown to HTML for smooth integration
+      // Bold
+      content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+      // Italic
+      content = content.replace(/\*(.*?)\*/g, '<i>$1</i>');
+      // Lists (simple)
+      content = content.replace(/^\s*-\s+(.*)$/gm, '<li>$1</li>');
+      // Wrap lists if any list items were created
+      if (content.includes('<li>')) {
+          content = content.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+      }
+      // Newlines to breaks (but avoid double breaks for list items or block elements)
+      content = content.replace(/\n/g, '<br>');
+
+      // 3. Insert using insertHTML to preserve formatting and flow
+      document.execCommand('insertHTML', false, content);
+      
       if (editorRef.current) {
         setText(editorRef.current.innerHTML);
         onTextChange(editorRef.current.innerHTML);

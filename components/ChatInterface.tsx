@@ -46,7 +46,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMe
             <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
                <Logo className="w-10 h-10 text-slate-300" />
             </div>
-            <p className="font-serif italic text-slate-500">Ask AcadeWrite for scholarly assistance.</p>
+            <p className="font-serif italic text-slate-500">Ask Scriptrix for scholarly assistance.</p>
           </div>
         )}
         

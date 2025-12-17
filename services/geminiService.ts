@@ -105,7 +105,7 @@ export const getChatResponse = async (history: ChatMessage[], newMessage: string
         parts: [{ text: h.content }]
       })),
       config: {
-        systemInstruction: `You are an expert Academic Writing Assistant called 'AcadeWrite Pro'. 
+        systemInstruction: `You are an expert Academic Writing Assistant called 'Scriptrix'. 
         You help students and researchers improve their writing. 
         Current Document Context: "${currentContext.substring(0, 2000)}..." (truncated if long).
         Always be professional, encouraging, and academically rigorous.
@@ -153,27 +153,30 @@ export const getAutocompleteSuggestion = async (textBeforeCursor: string): Promi
 export const performQuickAction = async (action: string, selection: string, customPrompt?: string): Promise<string> => {
   try {
     let prompt = "";
+    // Stricter instructions to avoid messy output
+    const strictInstruction = "Return ONLY the modified text. Do not use conversational filler, markdown code blocks, or surrounding quotes. Keep formatting minimal (bold/italic only if necessary).";
+
     switch (action) {
       case "Paraphrase Selection":
-        prompt = "Rewrite the following text to be more academic and professional, maintaining the original meaning:";
+        prompt = `Rewrite the following text to be more academic and professional, maintaining the original meaning. ${strictInstruction}`;
         break;
       case "Expand Ideas":
-        prompt = "Expand on the following text with 2-3 explanatory sentences to deepen the analysis:";
+        prompt = `Expand on the following text with 2-3 explanatory sentences to deepen the analysis. ${strictInstruction}`;
         break;
       case "Summarize":
-        prompt = "Summarize the following text concisely, retaining key academic points:";
+        prompt = `Summarize the following text concisely, retaining key academic points. ${strictInstruction}`;
         break;
       case "Citation Helper":
-        prompt = "Identify where citations are likely needed in the following text and suggest the type of source (e.g., 'Requires empirical study citation'):";
+        prompt = `Identify where citations are likely needed in the following text. Insert [Citation Needed] markers where appropriate. ${strictInstruction}`;
         break;
       case "Check Plagiarism Risk":
-        prompt = "Analyze the following text for potential plagiarism risks (e.g., too generic, common phrasing without attribution) and suggest how to make it more original:";
+        prompt = `Rewrite the following text to make it more original and reduce plagiarism risk, while keeping the same meaning. ${strictInstruction}`;
         break;
       case "Custom":
-        prompt = customPrompt || "Improve the following text:";
+        prompt = `${customPrompt || "Improve the following text:"} ${strictInstruction}`;
         break;
       default:
-        prompt = "Improve the following text:";
+        prompt = `Improve the following text: ${strictInstruction}`;
     }
 
     const response = await ai.models.generateContent({
@@ -181,7 +184,12 @@ export const performQuickAction = async (action: string, selection: string, cust
       contents: `${prompt}\n\n"${selection}"`
     });
 
-    return response.text || "Could not process selection.";
+    let text = response.text || "Could not process selection.";
+    
+    // Clean up potential markdown code block wrappers
+    text = text.replace(/^```(html|markdown)?\n/i, '').replace(/\n```$/, '');
+    
+    return text;
   } catch (error) {
     console.error("Quick action error:", error);
     return "Error processing request.";

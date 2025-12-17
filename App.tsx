@@ -189,7 +189,7 @@ const App: React.FC = () => {
              <Logo className="w-5 h-5 md:w-6 md:h-6" />
            </div>
            <div>
-             <h1 className="text-base md:text-lg font-serif font-bold tracking-tight text-white leading-none">AcadeWrite Pro</h1>
+             <h1 className="text-base md:text-lg font-serif font-bold tracking-tight text-white leading-none">Scriptrix</h1>
              <span className="text-[9px] md:text-[10px] text-slate-300 uppercase tracking-widest hidden sm:inline-block">Scholarly Assistant</span>
            </div>
         </div>
